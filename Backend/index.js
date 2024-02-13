@@ -8,6 +8,7 @@ app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 app.use(cookieParser())
 dotenv.config()
+app.use("/")
 const url = "mongodb://localhost:27017/ecomerce"
 connectDb()
 app.get("/", (req, res) => {
