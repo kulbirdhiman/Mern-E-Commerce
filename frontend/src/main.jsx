@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom/client'
 import App from './App.jsx'
 import Login from './pages/auth/Login.jsx';
 import './index.css'
+import Register from './pages/auth/Register.jsx';
 import {Route ,createRoutesFromElements ,RouterProvider} from 'react-router';
 import {  createBrowserRouter } from 'react-router-dom';
 import { Provider } from 'react-redux';
@@ -11,6 +12,7 @@ const router = createBrowserRouter(
   createRoutesFromElements(
   <Route path="/" element={<App />}>
     <Route path='/login' element={<Login/>} />
+    <Route path='/register' element={<Register/>} />
   </Route>
   
   )

@@ -11,12 +11,13 @@ const Login = () => {
   const navigate = useNavigate()
   const dispacth = useDispatch()
 
-  const [login, isLoading] = useLoginMutation()
+  const [login, {isLoading}] = useLoginMutation()
   const { userinfo } = useSelector(state => state.auth)
 
   const { search } = useLocation();
-  const sp = new URLSearchParams(search);
+    const sp = new URLSearchParams(search);
   const redirect = sp.get("redirect") || "/";
+
 
   useEffect(() => {
     if (userinfo) {
@@ -24,12 +25,14 @@ const Login = () => {
     }
   }, [navigate, redirect, userinfo]);
   const submitHandler = async (e) => {
-    e.prevnetDefault()
+    e.preventDefault();
     try {
-      let res = await login({ email, password }).unwrap()
-      setCreadionls({ ...res })
-    } catch (error) {
-      console.log(error)
+      const res =  await login({ email, password }).unwrap();
+      console.log(res)
+      dispacth(setCreadionls({...res}))
+      navigate(redirect)
+    } catch (err) {
+       toast.error(err?.data?.message || err.error);
     }
   }
   return (
@@ -38,7 +41,7 @@ const Login = () => {
         <h1 className="text-2xl font-semibold mb-4">
           SignIn
         </h1>
-        <form action="" className="w-[40rem] container ">
+        <form onSubmit={submitHandler} className="w-[40rem] container ">
           <div className="my-[2rem]">
             <label htmlFor="email" className="font-medium text-sm block">Email Address</label>
             <input
@@ -67,7 +70,7 @@ const Login = () => {
             type="submit"
             className="bg-pink-500 text-white px-4 py-2 rounded cursor-pointer my-[1rem]"
           >
-            {!isLoading ? "Signing In..." : "Sign In"}
+            {isLoading ? "Signing In..." : "Sign In"}
           </button>
           {isLoading && "loading...."}
         </form>

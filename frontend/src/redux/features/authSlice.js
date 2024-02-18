@@ -12,8 +12,9 @@ const authSlice = createSlice({
             localStorage.setItem("expDate", JSON.stringify(expDate))
         },
         logout: (state) => {
+            console.log("this is working")
             state.userinfo = null;
-            localStorage.clear()
+            localStorage.clear();
         }
     }
 })

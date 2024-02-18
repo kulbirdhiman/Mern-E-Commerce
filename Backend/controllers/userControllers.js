@@ -1,30 +1,31 @@
 import expressAsyncHandler from "express-async-handler"
 import User from '../models/userModel.js'
 import bcrypt from 'bcryptjs'
-import genrateToken from "../utils/genrateToken.js"
+import genrateToken from '../utils/genrateToken.js'
 const createUser = expressAsyncHandler(async (req, res) => {
     const { userName, email, password } = req.body;
     if (!userName || !email || !password) {
         res.status(400).json({ "error": "Please provide all the required fields" })
     }
     const isExits = await User.findOne({ email: email });
-    if (isExits) { res.send("user already exits"); }
-    const salt = await bcrypt.genSalt(10)
-    const hashPassword = await bcrypt.hash(password, salt);
+    if (isExits) { res.send("user already exits"); } else {
+        const salt = await bcrypt.genSalt(10)
+        const hashPassword = await bcrypt.hash(password, salt);
 
-    try {
-        const user = User.create({ userName, email, password: hashPassword });
-        genrateToken(res, user._id)
-        res.send(201).json({
-            id: user._id,
-            name: user._userName,
-            password: user.password,
-            email: user.email,
-
-        })
-    } catch (err) {
-        console.log(err)
+        try {
+            const Newuser = await User.create({ userName, email, password: hashPassword });
+            genrateToken(res, Newuser._id)
+            res.status(201).json({
+                id: Newuser._id,
+                userName: Newuser.userName,
+                email: Newuser.email,
+                isAdmin: Newuser.isAdmin
+            })
+        } catch (err) {
+            console.log(err)
+        }
     }
+
 })
 const loginUser = expressAsyncHandler(async (req, res) => {
     const { email, password } = req.body
@@ -35,10 +36,13 @@ const loginUser = expressAsyncHandler(async (req, res) => {
             genrateToken(res, isExits._id)
             res.status(201).json({
                 message: "Logged in successfully",
-                userName: isExits.name,
+                userName: isExits.userName,
                 email: isExits.email,
                 isAdmin: isExits.isAdmin
             })
+        }
+        else {
+            console.log("something wrog")
         }
 
     }
@@ -46,7 +50,7 @@ const loginUser = expressAsyncHandler(async (req, res) => {
 const logout = expressAsyncHandler(async (req, res) => {
     res.cookie("jwt", '', {
         httpOnly: true,
-        expires: new Date.now(0)
+        expires: new Date(0)
     })
 
     res.send('successfully logout')
