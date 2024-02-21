@@ -30,6 +30,21 @@ export const userApiSlice = apiSlice.injectEndpoints({
                 method: "POST",
                 body: data
             })
+        }),
+        getUsers: builder.query({
+            query: ({
+                url: `${User_Url}/`,
+                method: "get"
+            }),
+            providerTags: ["User"],
+            keepUnusedDataFor: 5
+        }),
+        deleteUser: builder.mutation({
+            query: (userId) => ({
+                url: ` ${User_Url}/${userId}`,
+                method: "delete",
+
+            })
         })
     })
 });
