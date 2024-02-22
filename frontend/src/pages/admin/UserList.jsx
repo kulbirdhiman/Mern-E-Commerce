@@ -1,12 +1,12 @@
 import { useEffect, useState } from "react";
 import { FaTrash, FaEdit, FaCheck, FaTimes } from "react-icons/fa";
-import Message from "../../components/Message";
-import Loader from "../../components/Loader";
+import Messege from '../../components/Messege'
+
 import {
   useDeleteUserMutation,
   useGetUsersQuery,
   useUpdateUserMutation,
-} from "../../redux/api/usersApiSlice";
+} from "../../redux/api/userApiSlice";
 import { toast } from "react-toastify";
 // ⚠️⚠️⚠️ don't forget this ⚠️⚠️⚠️⚠️
 // import AdminMenu from "./AdminMenu";
@@ -42,7 +42,7 @@ const UserList = () => {
     setEditableUserName(username);
     setEditableUserEmail(email);
   };
-
+console.log(users)
   const updateHandler = async (id) => {
     try {
       await updateUser({
@@ -56,16 +56,16 @@ const UserList = () => {
       toast.error(err?.data?.message || err.error);
     }
   };
-
+  console.log(isLoading)
   return (
     <div className="p-4">
       <h1 className="text-2xl font-semibold mb-4">Users</h1>
       {isLoading ? (
-        <Loader />
+        "loading..."
       ) : error ? (
-        <Message variant="danger">
+        <Messege variant="danger">
           {error?.data?.message || error.error}
-        </Message>
+        </Messege>
       ) : (
         <div className="flex flex-col md:flex-row">
           {/* <AdminMenu /> */}
@@ -81,6 +81,7 @@ const UserList = () => {
             </thead>
             <tbody>
               {users.map((user) => (
+                
                 <tr key={user._id}>
                   <td className="px-4 py-2">{user._id}</td>
                   <td className="px-4 py-2">

@@ -56,10 +56,10 @@ const logout = expressAsyncHandler(async (req, res) => {
     res.send('successfully logout')
 })
 
-const GetAllUser = expressAsyncHandler(async (req, res) => {
-    const getAllUser = User.find({})
-    res.send(getAllAdmin)
-})
+const getAllUsers = expressAsyncHandler(async (req, res) => {
+    const users = await User.find({});
+    res.json(users);
+});
 
 const getCurrnetUSerProfile = expressAsyncHandler(async (req, res) => {
     const user = await User.findById(req.user._id)
@@ -143,4 +143,4 @@ const UpdateUserById = expressAsyncHandler(async (req, res) => {
         throw new Error("Can't find user")
     }
 })
-export { createUser, loginUser, logout, GetAllUser, getCurrnetUSerProfile, updateCurrentUSer, deleteUSer, getUSerById, UpdateUserById };
+export { createUser, loginUser, logout, getAllUsers, getCurrnetUSerProfile, updateCurrentUSer, deleteUSer, getUSerById, UpdateUserById };

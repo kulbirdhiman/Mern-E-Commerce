@@ -22,8 +22,8 @@ const router = createBrowserRouter(
     <Route path='/register' element={<Register/>} />
 
 
-    <Route path='/admin' element={AdminRoute} >
-       <Route path='userlist'element={UserList} />
+    <Route path='/admin' element={<AdminRoute/>} >
+       <Route path='userlist'element={<UserList/>} />
     </Route>
   </Route>
   
