@@ -1,8 +1,5 @@
 
-const CatagoreyForm = ({value,
-  setValue,
-  handleSubmit,
-  buttonText = "Submit", handleDelete,
+const CatagoreyForm = ({value,setValue, handleSubmit, buttonText = "Submit",handleDelete,
 })=>{
     return(
          <div className="p-3">

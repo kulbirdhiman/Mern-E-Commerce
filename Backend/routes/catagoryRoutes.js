@@ -4,7 +4,7 @@ import { createCategroy, readCatagory, updateCatagory, listCatagory, deleteCatag
 const Router = express.Router();
 
 Router.route('/').post(authmiddleware, authrizeAdmin, createCategroy);
-Router.route('/:id').post(authmiddleware, authrizeAdmin, updateCatagory);
+Router.route('/:id').put(authmiddleware, authrizeAdmin, updateCatagory);
 Router.route("/:id").delete(authmiddleware, authrizeAdmin, deleteCatagory)
 Router.route("/categories").get(listCatagory)
 Router.route("/:id").get(readCatagory)

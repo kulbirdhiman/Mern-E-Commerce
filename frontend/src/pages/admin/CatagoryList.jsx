@@ -7,7 +7,7 @@ import {
 } from "../../redux/api/categoryApiSlice";
 
 import { toast } from "react-toastify";
-import CategoryForm from "../../components/CategoryForm";
+import CatagoreyForm from "../../components/CatagoreyForm";
 import Modal from "../../components/Modal";
 
 
@@ -95,7 +95,7 @@ const CategoryList = () => {
       
       <div className="md:w-3/4 p-3">
         <div className="h-12">Manage Categories</div>
-        <CategoryForm
+        <CatagoreyForm
           value={name}
           setValue={setName}
           handleSubmit={handleCreateCategory}
@@ -123,7 +123,7 @@ const CategoryList = () => {
         </div>
 
         <Modal isOpen={modalVisible} onClose={() => setModalVisible(false)}>
-          <CategoryForm
+          <CatagoreyForm
             value={updatingName}
             setValue={(value) => setUpdatingName(value)}
             handleSubmit={handleUpdateCategory}

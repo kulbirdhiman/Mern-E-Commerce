@@ -1,30 +1,35 @@
-import Jwt from "jsonwebtoken";
+import jwt from "jsonwebtoken";
 import User from "../models/userModel.js";
 import expressAsyncHandler from "express-async-handler";
 
 const authmiddleware = expressAsyncHandler(async (req, res, next) => {
-    let token = req.cookies.Jwt;
+    let token;
+
+    // Read JWT from the 'jwt' cookie
+    token = req.cookies.jwt;
+
     if (token) {
         try {
-            const decoded = Jwt.verify(token, "karan")
-            req.User = User.findOne({ _id: decoded._id }).select("-password");
+            const decoded = jwt.verify(token, "karan");
+            req.user = await User.findById(decoded.userId).select("-password");
             next();
-
         } catch (error) {
-            throw new Error("invalid token ")
+            res.status(401);
+            throw new Error("Not authorized, token failed.");
         }
+    } else {
+        res.status(401);
+        throw new Error("Not authorized, no token.");
     }
-    else {
-        throw new Error("invalid token ")
-    }
-})
+});
 
-const authrizeAdmin = (req, res) => {
-    if (req.User && req.User.isAdmin) {
-        next()
+const authrizeAdmin = (req, res, next) => {
+    if (req.user && req.user.isAdmin) {
+        console.log(req.user);
+        next();
+    } else {
+        res.status(401).send("Not authorized as an admin.");
     }
-    else {
-        res.status(401).send("your are not admin")
-    }
-}
-export { authrizeAdmin, authmiddleware }
+};
+
+export { authmiddleware, authrizeAdmin };

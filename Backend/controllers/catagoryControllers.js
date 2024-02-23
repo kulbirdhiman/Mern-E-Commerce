@@ -5,7 +5,7 @@ const createCategroy = expressAsyncHandler(async (req, res) => {
     if (!name) {
         res.status(404).json("name is required");
     };
-    const isExits = await catagory.findOne(name);
+    const isExits = await catagory.findOne({ name });
     if (isExits) {
         res.status(404).json("this catagory is aleardy exits")
     }
@@ -20,25 +20,29 @@ const createCategroy = expressAsyncHandler(async (req, res) => {
 })
 const updateCatagory = expressAsyncHandler(async (req, res) => {
     try {
-        const catagoryId = req.params.id;
-        const { name } = req.body()
-        const catagory = catagory.findById(catagoryId);
-        if (!catagory) {
-            res.status(404).json("cant find ")
+        const { name } = req.body;
+        const { id } = req.params;
+
+        const category = await catagory.findOne({ _id: id });
+
+        if (!category) {
+            return res.status(404).json({ error: "Category not found" });
         }
-        else {
-            const updatedCatagory = await catagory.updateOne({ _id: catagoryId }, { $set: { name } })
-            res.json(updatedCatagory)
-        }
+
+        category.name = name;
+
+        const updatedCategory = await category.save();
+        res.json(updatedCategory);
     } catch (error) {
-        res.status(404).json(error)
+        console.error(error);
+        res.status(500).json({ error: "Internal server error" });
     }
 })
 const deleteCatagory = expressAsyncHandler(async (req, res) => {
-    const catagoryId = req.params.id;
+    const id = req.params.id;
     try {
-        const deleted = await catagory.deleteOne(catagoryId)
-
+        const deleted = await catagory.findByIdAndRemove(id);
+        res.send(deleted)
 
     } catch (error) {
         res.send("something wrong")
@@ -58,6 +62,7 @@ const readCatagory = expressAsyncHandler(async (req, res) => {
     try {
         const id = req.params.id
         const findcatagory = await catagory.findById(id)
+        res.send(findcatagory)
     } catch (error) {
         res.status(404).json(error)
     }
