@@ -1,33 +1,40 @@
 import { apiSlice } from "./apiSlice";
-import { CATEGORY_URL } from '../constants'
-import { query } from "express";
-const catagoryApi = apiSlice.injectEndpoints({
-    endpoints: (builder) => {
-        createCategroy: builder.mutation({
-            query: (data) => ({
-                url: `${catagoryApi}`,
+import { CATEGORY_URL } from "../constants";
+
+export const categoryApiSlice = apiSlice.injectEndpoints({
+    endpoints: (builder) => ({
+        createCategory: builder.mutation({
+            query: (newCategory) => ({
+                url: `${CATEGORY_URL}`,
                 method: "POST",
-                body: data
+                body: newCategory,
             }),
-            updatedCatagory: builder.mutation({
-                query: (id, data) => ({
-                    url: `${CATEGORY_URL}/${id}`,
-                    method: "PUT",
-                    body: data
-                }),
-                deletedCatagory: builder.mutation({
-                    query: id => ({
-                        url: `${CATEGORY_URL}/:${id}`,
-                        method: "DELETE"
-                    }),
-                    fecthCatagory: builder.query({
-                        query: () => ({
-                            url: `${CATEGORY_URL}/categories`,
-                            method: "GET"
-                        })
-                    })
-                })
+        }),
+
+        updateCategory: builder.mutation({
+            query: ({ categoryId, updatedCategory }) => ({
+                url: `${CATEGORY_URL}/${categoryId}`,
+                method: "PUT",
+                body: updatedCategory,
             }),
-        })
-    }
-})
+        }),
+
+        deleteCategory: builder.mutation({
+            query: (categoryId) => ({
+                url: `${CATEGORY_URL}/${categoryId}`,
+                method: "DELETE",
+            }),
+        }),
+
+        fetchCategories: builder.query({
+            query: () => `${CATEGORY_URL}/categories`,
+        }),
+    }),
+});
+
+export const {
+    useCreateCategoryMutation,
+    useUpdateCategoryMutation,
+    useDeleteCategoryMutation,
+    useFetchCategoriesQuery,
+} = categoryApiSlice;

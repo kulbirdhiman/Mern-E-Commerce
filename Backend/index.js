@@ -5,15 +5,21 @@ import cookieParser from "cookie-parser";
 // Routes 
 import userRouter from './routes/UserRoutes.js';
 import catagoryRoutes from './routes/catagoryRoutes.js';
+import productRoutes from './routes/productsRoutes.js'
+import uploadRoutes from './routes/uploadRoutes.js'
 const app = express()
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 app.use(cookieParser())
 dotenv.config()
-app.use("/api/user", userRouter)
-const url = "mongodb://localhost:27017/ecomerce"
 connectDb()
-app.use("/api/category", catagoryRoutes)
 const port = 5000
+
+app.use("/api/user", userRouter)
+app.use("/api/category", catagoryRoutes)
+app.use("/api/product", productRoutes)
+app.use("/api/upload", uploadRoutes)
+const __dirname = path.resolve();
+app.use("/uploads", express.static(path.join(__dirname + "/uploads")));
 
 app.listen(port, () => console.log("server up"))
