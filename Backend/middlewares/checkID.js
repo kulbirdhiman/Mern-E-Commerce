@@ -1,9 +1,11 @@
-import { ObjectId } from "mongoose";
-const CheckId = (req, res, next) => {
-    if (!ObjectId(req.parms.id)) {
-        res.status(404)
-        throw new Error
+import { isValidObjectId } from "mongoose";
+
+function checkId(req, res, next) {
+    if (!isValidObjectId(req.params.id)) {
+        res.status(404);
+        throw new Error(`Invalid Object of: ${req.params.id}`);
     }
-    next()
+    next();
 }
-export default CheckId
+
+export default checkId;

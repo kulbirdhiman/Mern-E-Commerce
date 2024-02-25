@@ -11,5 +11,5 @@ const catagoryShecma = mongoose.Schema({
 })
 
 
-const catagory = mongoose.model("catagory", catagoryShecma)
+const catagory = mongoose.model("Category", catagoryShecma)
 export default catagory

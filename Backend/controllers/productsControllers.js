@@ -1,15 +1,15 @@
 import expressAsyncHandler from "express-async-handler";
-import Product from "../models/ProductModel";
+import Product from "../models/ProductModel.js";
 
 const addProduct = expressAsyncHandler(async (req, res) => {
     try {
-        const { name, brand, catagory, price, image, description, quantity } = req.fields
+        const { name, brand, category, price, image, description, quantity } = req.fields
         switch (true) {
             case !name:
                 res.json({ "error": "name is required" })
             case !brand:
                 res.json({ "error": "brand is required" })
-            case !catagory:
+            case !category:
                 res.json({ "error": "catagory is required" })
             case !price:
                 res.json({ "error": "price is required" })
@@ -65,6 +65,7 @@ const delteproducts = expressAsyncHandler(async (req, res) => {
 const fetchProducts = expressAsyncHandler(async (req, res) => {
     try {
         const keybord = req.query.keybord ? { name: { $regex: req.query.keybord, $options: 'i' } } : {}
+        console.log(keybord)
         const pageSize = 6
         const count = await Product.countDocuments({ ...keybord })
         const products = await Product.find({ ...keybord }).limit(keybord)
@@ -102,31 +103,45 @@ const fecthAllProducts = expressAsyncHandler(async (req, res) => {
 })
 const addProjuctReviews = expressAsyncHandler(async (req, res) => {
     try {
-        const { rating, comment } = req.body
-        const product = Product.findById(req.params.id)
-        const alreadyReviwed = product.reviews.find(r => r.user.toString() === req.user._id.toString())
-        console.log(alreadyReviwed)
-        if (alreadyReviwed) {
-            return res.status(400).send("You have already reviewed this product")
-        } else {
+        const { rating, comment } = req.body;
+        const product = await Product.findById(req.params.id);
+
+        if (product) {
+            const alreadyReviewed = product.reviews.find(
+                (r) => r.user.toString() === req.user._id.toString()
+            );
+
+            if (alreadyReviewed) {
+                res.status(400);
+                throw new Error("Product already reviewed");
+            }
+
             const review = {
                 name: req.user.username,
                 rating: Number(rating),
                 comment,
-                user: req.user._id
-            }
-            Product.reviews.push(review)
-            product.numReviews = product.reviews.lenght
+                user: req.user._id,
+            };
+
+            product.reviews.push(review);
+
+            product.numReviews = product.reviews.length;
+
             product.rating =
                 product.reviews.reduce((acc, item) => item.rating + acc, 0) /
                 product.reviews.length;
-            console.log(product.rating);
-            await Product.save()
+
+            await product.save();
+            res.status(201).json({ message: "Review added" });
+        } else {
+            res.status(404);
+            throw new Error("Product not found");
         }
     } catch (error) {
-        res.status(400).json(error.messge)
+        console.error(error);
+        res.status(400).json(error.message);
     }
-})
+});
 const topProducts = expressAsyncHandler(async (req, res) => {
     try {
         const products = await Product.find({}.sort({ rating: -1 })).limit(7)
@@ -138,12 +153,12 @@ const topProducts = expressAsyncHandler(async (req, res) => {
 })
 const newProducts = expressAsyncHandler(async (req, res) => {
     try {
-        const products = await Product.find({}.sort({ _id: - 1 })).limit(7)
+        const products = await Product.find({}).sort({ _id: -1 }).limit(5);
         res.json(products)
     } catch (error) {
         res.status(404)
         throw new Error("Could not get the top products")
     }
 })
-export { addProduct, updateProduct, delteproducts, fetchProducts, fecthProductById, fecthAllProducts, addProjuctReviews, topProducts }
+export { addProduct, updateProduct, delteproducts, fetchProducts, fecthProductById, fecthAllProducts, addProjuctReviews, topProducts, newProducts }
 
