@@ -9,6 +9,7 @@ export const categoryApiSlice = apiSlice.injectEndpoints({
                 method: "POST",
                 body: newCategory,
             }),
+            providesTags: ["Category"],
         }),
 
         updateCategory: builder.mutation({
@@ -28,6 +29,8 @@ export const categoryApiSlice = apiSlice.injectEndpoints({
 
         fetchCategories: builder.query({
             query: () => `${CATEGORY_URL}/categories`,
+            providesTags: ["Category"],
+            keepUnusedDataFor: 5,
         }),
     }),
 });

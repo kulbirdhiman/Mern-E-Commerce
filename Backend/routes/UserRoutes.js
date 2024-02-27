@@ -9,7 +9,7 @@ router.post("/logout", logout)
 router.route("/profile")
     .post(authmiddleware, getCurrnetUSerProfile)
     .put(authmiddleware, updateCurrentUSer)
-router.route("/:id").delete(authrizeAdmin, authmiddleware, deleteUSer)
+router.route("/:id").delete(authmiddleware, authrizeAdmin, deleteUSer)
     .get(authmiddleware, authrizeAdmin, getUSerById)
     .put(authmiddleware, authrizeAdmin, UpdateUserById)
 export default router

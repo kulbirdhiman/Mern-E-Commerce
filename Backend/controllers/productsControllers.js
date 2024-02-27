@@ -13,8 +13,6 @@ const addProduct = expressAsyncHandler(async (req, res) => {
                 res.json({ "error": "catagory is required" })
             case !price:
                 res.json({ "error": "price is required" })
-            case !image:
-                res.json({ "error": "image is required" })
             case !description:
                 res.json({ "error": "desctpion is required" })
             case !quantity:
@@ -31,18 +29,16 @@ const addProduct = expressAsyncHandler(async (req, res) => {
 
 const updateProduct = expressAsyncHandler(async (req, res) => {
     try {
-        const { name, brand, catagory, price, image, description, quantity } = req.fields
+        const { name, brand, category, price, image, description, quantity } = req.fields
         switch (true) {
             case !name:
                 res.json({ "error": "name is required" })
             case !brand:
                 res.json({ "error": "brand is required" })
-            case !catagory:
+            case !category:
                 res.json({ "error": "catagory is required" })
             case !price:
                 res.json({ "error": "price is required" })
-            case !image:
-                res.json({ "error": "image is required" })
             case !description:
                 res.json({ "error": "desctpion is required" })
             case !quantity:
@@ -94,8 +90,9 @@ const fecthProductById = expressAsyncHandler(async (req, res) => {
 })
 const fecthAllProducts = expressAsyncHandler(async (req, res) => {
     try {
-        const products = await Product.find({}).populate("catagory").limit(12).sort({ createAt: -1 })
-        req.json(products)
+        const products = await Product.find().populate("catagory")
+        console.log(products)
+        res.json(products)
     } catch (error) {
         res.status(404)
         throw new Error("Error in getting all products")
@@ -117,7 +114,7 @@ const addProjuctReviews = expressAsyncHandler(async (req, res) => {
             }
 
             const review = {
-                name: req.user.username,
+                name: req.user.userName,
                 rating: Number(rating),
                 comment,
                 user: req.user._id,
@@ -139,7 +136,7 @@ const addProjuctReviews = expressAsyncHandler(async (req, res) => {
         }
     } catch (error) {
         console.error(error);
-        res.status(400).json(error.message);
+        res.status(400).json({ error: "something wrong" });
     }
 });
 const topProducts = expressAsyncHandler(async (req, res) => {

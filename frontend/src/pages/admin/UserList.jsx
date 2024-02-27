@@ -1,7 +1,8 @@
-import { useEffect, useState } from "react";
+
 import { FaTrash, FaEdit, FaCheck, FaTimes } from "react-icons/fa";
 import Messege from '../../components/Messege'
-
+import AdminMenu from "./AdminMenu";
+import { useState } from "react"
 import {
   useDeleteUserMutation,
   useGetUsersQuery,
@@ -22,13 +23,14 @@ const UserList = () => {
 
   const [updateUser] = useUpdateUserMutation();
 
-  useEffect(() => {
-    refetch();
-  }, [refetch]);
+  // useEffect(() => {
+  //   refetch();
+  // }, [refetch]);
 
   const deleteHandler = async (id) => {
     if (window.confirm("Are you sure")) {
       try {
+        console.log( 'this is user :',id)
         await deleteUser(id);
         refetch();
       } catch (err) {
@@ -47,7 +49,7 @@ console.log(users)
     try {
       await updateUser({
         userId: id,
-        username: editableUserName,
+        userName: editableUserName,
         email: editableUserEmail,
       });
       setEditableUserId(null);
@@ -68,7 +70,7 @@ console.log(users)
         </Messege>
       ) : (
         <div className="flex flex-col md:flex-row">
-          {/* <AdminMenu /> */}
+          <AdminMenu />
           <table className="w-full md:w-4/5 mx-auto">
             <thead>
               <tr>
@@ -102,7 +104,7 @@ console.log(users)
                       </div>
                     ) : (
                       <div className="flex items-center">
-                        {user.username}{" "}
+                        {user.userName}{" " }
                         <button
                           onClick={() =>
                             toggleEdit(user._id, user.username, user.email)

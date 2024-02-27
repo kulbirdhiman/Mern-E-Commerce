@@ -76,28 +76,26 @@ const getCurrnetUSerProfile = expressAsyncHandler(async (req, res) => {
     }
 })
 const updateCurrentUSer = expressAsyncHandler(async (req, res) => {
-    const user = User.findById(req.user._id)
+    const user = await User.findById(req.user._id); // Make sure to use await to wait for the result
     if (user) {
-        user.name = req.body.name || user.name
-        user.email = req.body.email || user.email
+        user.name = req.body.name || user.name;
+        user.email = req.body.email
         if (req.body.password) {
-            const salt = await bcrypt.genSalt(10)
+            const salt = await bcrypt.genSalt(10);
             const hashPassword = await bcrypt.hash(req.body.password, salt);
             user.password = hashPassword;
-
         }
 
-        const updatedUser = await user.save()
+        const updatedUser = await user.save();
         res.status(200).json({
-            _id: user._id,
-            userName: user.name,
-            email: user.email,
-        })
+            _id: updatedUser._id, // Use updatedUser instead of user
+            userName: updatedUser.name, // Use updatedUser instead of user
+            email: updatedUser.email, // Use updatedUser instead of user
+        });
+    } else {
+        res.status(404).json({ error: "User not found" }); // Send a JSON response
     }
-    else {
-        res.status(404)
-        throw new Error("User not")
-    }
+
 })
 const deleteUSer = expressAsyncHandler(async (req, res) => {
     const user = await User.findById(req.params.id)
@@ -105,7 +103,7 @@ const deleteUSer = expressAsyncHandler(async (req, res) => {
         if (req.user.isAdmin && user.isAdmin) {
             res.status(404).send("can not delete admin")
         }
-        const deleteUser = User.deleteOne({ _id: user._id })
+        const deleteUser = await User.deleteOne({ _id: user._id })
         res.send("Deleted User")
     }
     else {
@@ -126,17 +124,20 @@ const getUSerById = expressAsyncHandler(async (req, res) => {
 
 })
 const UpdateUserById = expressAsyncHandler(async (req, res) => {
+    const { name, email } = req.body
     const user = await User.findById(req.params.id)
     if (user) {
-        user.name = req.body.name || user.name
-        user.email = req.body.email || user.email
-        const updatedUser = await user.save()
-        res.json({
-            id: updatedUser._id,
-            userName: updatedUser.name,
-            email: updatedUser.email,
-            isAdmin: updatedUser.isAdmin
-        })
+        console.log(user)
+        // user.userName = req.body.name
+        user.email = req.body.email
+        const updatedUser = await User.findByIdAndUpdate(req.params.id, { userName: name, email: email })
+        res.json(updatedUser)
+        // res.json({
+        //     id: updatedUser._id,
+        //     userName: updatedUser.name,
+        //     email: updatedUser.email,
+        //     isAdmin: updatedUser.isAdmin
+        // })
     }
     else {
         res.status(404)

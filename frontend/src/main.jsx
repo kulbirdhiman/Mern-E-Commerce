@@ -11,6 +11,9 @@ import { Provider } from 'react-redux';
 import store from './redux/store.js'
 import Profile from './pages/user/Profile.jsx'
 import UserList from './pages/admin/UserList.jsx';
+import CategoryList from './pages/admin/CatagoryList.jsx'
+import ProductList from './pages/admin/ProductList.jsx';
+import AllProduct from './pages/admin/AllProduct.jsx';
 import AdminRoute from './pages/admin/AdminRoute.jsx';
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -24,6 +27,9 @@ const router = createBrowserRouter(
 
     <Route path='/admin' element={<AdminRoute/>} >
        <Route path='userlist'element={<UserList/>} />
+       <Route path='categorylist'element={<CategoryList/>} />
+       <Route path='productlist'element={<ProductList/>} />
+       <Route path='allproductslist'element={<AllProduct/>} />
     </Route>
   </Route>
   

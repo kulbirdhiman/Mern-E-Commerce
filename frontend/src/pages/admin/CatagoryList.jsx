@@ -5,20 +5,21 @@ import {
   useDeleteCategoryMutation,
   useFetchCategoriesQuery,
 } from "../../redux/api/catagoryApiSlice";
-
+import Model from '../../components/Model'
 import { toast } from "react-toastify";
+import AdminMenu from "./AdminMenu";
 import CatagoreyForm from "../../components/CatagoreyForm";
-import Modal from "../../components/Modal";
+
 
 
 const CategoryList = () => {
-  const { data: categories } = useFetchCategoriesQuery();
+  const { data: categories ,refetch} = useFetchCategoriesQuery();
   const [name, setName] = useState("");
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [updatingName, setUpdatingName] = useState("");
   const [modalVisible, setModalVisible] = useState(false);
 
-  const [createCategory] = useCreateCategoryMutation();
+  const [createCategory ] = useCreateCategoryMutation();
   const [updateCategory] = useUpdateCategoryMutation();
   const [deleteCategory] = useDeleteCategoryMutation();
 
@@ -37,6 +38,7 @@ const CategoryList = () => {
       } else {
         setName("");
         toast.success(`${result.name} is created.`);
+        refetch()
       }
     } catch (error) {
       console.error(error);
@@ -67,6 +69,7 @@ const CategoryList = () => {
         setSelectedCategory(null);
         setUpdatingName("");
         setModalVisible(false);
+        refetch()
       }
     } catch (error) {
       console.error(error);
@@ -83,6 +86,7 @@ const CategoryList = () => {
         toast.success(`${result.name} is deleted.`);
         setSelectedCategory(null);
         setModalVisible(false);
+        refetch()
       }
     } catch (error) {
       console.error(error);
@@ -92,8 +96,8 @@ const CategoryList = () => {
 
   return (
     <div className="ml-[10rem] flex flex-col md:flex-row">
-      
       <div className="md:w-3/4 p-3">
+      <AdminMenu />
         <div className="h-12">Manage Categories</div>
         <CatagoreyForm
           value={name}
@@ -121,8 +125,7 @@ const CategoryList = () => {
             </div>
           ))}
         </div>
-
-        <Modal isOpen={modalVisible} onClose={() => setModalVisible(false)}>
+<Model isOpen={modalVisible} onClose={() => setModalVisible(false)}>
           <CatagoreyForm
             value={updatingName}
             setValue={(value) => setUpdatingName(value)}
@@ -130,7 +133,9 @@ const CategoryList = () => {
             buttonText="Update"
             handleDelete={handleDeleteCategory}
           />
-        </Modal>
+        </Model>
+        
+          
       </div>
     </div>
   );
