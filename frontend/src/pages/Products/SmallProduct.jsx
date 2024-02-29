@@ -1,14 +1,16 @@
 import { Link } from "react-router-dom";
-const SmallProduct = ({product}) => {
+import HeartIcon from "./HeartIcon";
+
+const SmallProduct = ({ product }) => {
   return (
     <div className="w-[20rem] ml-[2rem] p-3">
-              <div className="relative">
+      <div className="relative">
         <img
           src={product.image}
           alt={product.name}
           className="h-auto rounded"
         />
-        
+        <HeartIcon product={product} />
       </div>
 
       <div className="p-4">
@@ -21,8 +23,8 @@ const SmallProduct = ({product}) => {
           </h2>
         </Link>
       </div>
-        </div>
-  )
-}
+    </div>
+  );
+};
 
-export default SmallProduct
+export default SmallProduct;

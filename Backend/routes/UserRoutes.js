@@ -1,15 +1,38 @@
 import express from "express";
-import { createUser, loginUser, logout, getAllUsers, getCurrnetUSerProfile, updateCurrentUSer, deleteUSer, getUSerById, UpdateUserById } from "../controllers/userControllers.js";
-import { authmiddleware, authrizeAdmin } from "../middlewares/authmiddleware.js";
-const router = express.Router()
+import {
+  createUser,
+  loginUser,
+  logoutCurrentUser,
+  getAllUsers,
+  getCurrentUserProfile,
+  updateCurrentUserProfile,
+  deleteUserById,
+  getUserById,
+  updateUserById,
+} from "../controllers/userController.js";
 
-router.route("/").post(createUser).get(authmiddleware, authrizeAdmin, getAllUsers)
-router.post("/login", loginUser)
-router.post("/logout", logout)
-router.route("/profile")
-    .post(authmiddleware, getCurrnetUSerProfile)
-    .put(authmiddleware, updateCurrentUSer)
-router.route("/:id").delete(authmiddleware, authrizeAdmin, deleteUSer)
-    .get(authmiddleware, authrizeAdmin, getUSerById)
-    .put(authmiddleware, authrizeAdmin, UpdateUserById)
-export default router
+import { authenticate, authorizeAdmin } from "../middlewares/authMiddleware.js";
+
+const router = express.Router();
+
+router
+  .route("/")
+  .post(createUser)
+  .get(authenticate, authorizeAdmin, getAllUsers);
+
+router.post("/auth", loginUser);
+router.post("/logout", logoutCurrentUser);
+
+router
+  .route("/profile")
+  .get(authenticate, getCurrentUserProfile)
+  .put(authenticate, updateCurrentUserProfile);
+
+// ADMIN ROUTES 👇
+router
+  .route("/:id")
+  .delete(authenticate, authorizeAdmin, deleteUserById)
+  .get(authenticate, authorizeAdmin, getUserById)
+  .put(authenticate, authorizeAdmin, updateUserById);
+
+export default router;

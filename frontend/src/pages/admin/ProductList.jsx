@@ -1,61 +1,73 @@
-import { useNavigate } from "react-router"
-import { useState } from "react"
-import {useCreateProductMutation,useUploadProductImageMutation} from '../../redux/api/productApiSlice';
-import {useFetchCategoriesQuery} from '../../redux/api/catagoryApiSlice'
-import {toast} from 'react-toastify'
-import AdminMenu from './AdminMenu'
-const ProductList = ()=>{
-    const[image,setImage] = useState("")
-    const [name ,setName] = useState()
-    const [discription ,setDiscription] = useState('')
-    const [price , setPrice] = useState('');
-    const [category ,setCategory] = useState('')
-    const [quantity , setQuantity] = useState("")
-    const [brand ,setBrand] = useState('')
-    const [stock ,setStock ]= useState(0)
-    const [imageUrl , setImageUrl] =useState(null)
-    const navigate = useNavigate()
-    const [createProduct ,{isLoading}] = useCreateProductMutation()
-    const [uploadProductImage] = useUploadProductImageMutation()
-    const {data :categories } = useFetchCategoriesQuery()
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import {
+  useCreateProductMutation,
+  useUploadProductImageMutation,
+} from "../../redux/api/productApiSlice";
+import { useFetchCategoriesQuery } from "../../redux/api/categoryApiSlice";
+import { toast } from "react-toastify";
+import AdminMenu from "./AdminMenu";
 
-    const uploadFileHandler = async (e)=>{
-        try {
-            const formData = new FormData();
-            formData.append("image", e.target.files[0])
-          const res = await uploadProductImage(formData).unwrap();
-          toast.success(res.message);
-           setImage(res.image);
-           setImageUrl(res.image);
-        } catch (error) {
-            toast.error(error.error)
-        }
-    }
-    const submitHandler = async (e) =>{
-        e.preventDefault();
-        try {
-            const formData = FormData();
-            formData.append("image",image)
-            formData.append("name",name)
-            formData.append("brand",brand)
-            formData.append("discription",discription),
-            formData.append("price", price)
-            formData.append("quantity",quantity)
-            formData.append("stock",stock)
-            const {data} = await createProduct(formData);
-            if(data.error){
-                toast.error("product not created")
-            }else{
-                toast.success("product is Created Successfully");
-                navigate("/")
-            }
-        } catch (error) {
-            toast.error("something worong/")
-        }
-    }
+const ProductList = () => {
+  const [image, setImage] = useState("");
+  const [name, setName] = useState("");
+  const [description, setDescription] = useState("");
+  const [price, setPrice] = useState("");
+  const [category, setCategory] = useState("");
+  const [quantity, setQuantity] = useState("");
+  const [brand, setBrand] = useState("");
+  const [stock, setStock] = useState(0);
+  const [imageUrl, setImageUrl] = useState(null);
+  const navigate = useNavigate();
 
-    return (
-        <div className="container xl:mx-[9rem] sm:mx-[0]">
+  const [uploadProductImage] = useUploadProductImageMutation();
+  const [createProduct] = useCreateProductMutation();
+  const { data: categories } = useFetchCategoriesQuery();
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    try {
+      const productData = new FormData();
+      productData.append("image", image);
+      productData.append("name", name);
+      productData.append("description", description);
+      productData.append("price", price);
+      productData.append("category", category);
+      productData.append("quantity", quantity);
+      productData.append("brand", brand);
+      productData.append("countInStock", stock);
+
+      const { data } = await createProduct(productData);
+
+      if (data.error) {
+        toast.error("Product create failed. Try Again.");
+      } else {
+        toast.success(`${data.name} is created`);
+        navigate("/");
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error("Product create failed. Try Again.");
+    }
+  };
+
+  const uploadFileHandler = async (e) => {
+    const formData = new FormData();
+    formData.append("image", e.target.files[0]);
+
+    try {
+      const res = await uploadProductImage(formData).unwrap();
+      toast.success(res.message);
+      setImage(res.image);
+      setImageUrl(res.image);
+    } catch (error) {
+      toast.error(error?.data?.message || error.error);
+    }
+  };
+
+  return (
+    <div className="container xl:mx-[9rem] sm:mx-[0]">
       <div className="flex flex-col md:flex-row">
         <AdminMenu />
         <div className="md:w-3/4 p-3">
@@ -133,8 +145,8 @@ const ProductList = ()=>{
             <textarea
               type="text"
               className="p-2 mb-3 bg-[#101011] border rounded-lg w-[95%] text-white"
-              value={discription}
-              onChange={(e) => setDiscription(e.target.value)}
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
             ></textarea>
 
             <div className="flex justify-between">
@@ -165,7 +177,7 @@ const ProductList = ()=>{
             </div>
 
             <button
-              onClick={submitHandler}
+              onClick={handleSubmit}
               className="py-4 px-10 mt-5 rounded-lg text-lg font-bold bg-pink-600"
             >
               Submit
@@ -174,6 +186,7 @@ const ProductList = ()=>{
         </div>
       </div>
     </div>
-    )
-}
-export default ProductList
+  );
+};
+
+export default ProductList;

@@ -158,4 +158,3 @@ const newProducts = expressAsyncHandler(async (req, res) => {
     }
 })
 export { addProduct, updateProduct, delteproducts, fetchProducts, fecthProductById, fecthAllProducts, addProjuctReviews, topProducts, newProducts }
-

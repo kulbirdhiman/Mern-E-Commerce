@@ -1,13 +1,12 @@
-
+import { useEffect, useState } from "react";
 import { FaTrash, FaEdit, FaCheck, FaTimes } from "react-icons/fa";
-import Messege from '../../components/Messege'
-import AdminMenu from "./AdminMenu";
-import { useState } from "react"
+import Message from "../../components/Message";
+import Loader from "../../components/Loader";
 import {
   useDeleteUserMutation,
   useGetUsersQuery,
   useUpdateUserMutation,
-} from "../../redux/api/userApiSlice";
+} from "../../redux/api/usersApiSlice";
 import { toast } from "react-toastify";
 // ⚠️⚠️⚠️ don't forget this ⚠️⚠️⚠️⚠️
 // import AdminMenu from "./AdminMenu";
@@ -23,14 +22,13 @@ const UserList = () => {
 
   const [updateUser] = useUpdateUserMutation();
 
-  // useEffect(() => {
-  //   refetch();
-  // }, [refetch]);
+  useEffect(() => {
+    refetch();
+  }, [refetch]);
 
   const deleteHandler = async (id) => {
     if (window.confirm("Are you sure")) {
       try {
-        console.log( 'this is user :',id)
         await deleteUser(id);
         refetch();
       } catch (err) {
@@ -44,12 +42,12 @@ const UserList = () => {
     setEditableUserName(username);
     setEditableUserEmail(email);
   };
-console.log(users)
+
   const updateHandler = async (id) => {
     try {
       await updateUser({
         userId: id,
-        userName: editableUserName,
+        username: editableUserName,
         email: editableUserEmail,
       });
       setEditableUserId(null);
@@ -58,19 +56,19 @@ console.log(users)
       toast.error(err?.data?.message || err.error);
     }
   };
-  console.log(isLoading)
+
   return (
     <div className="p-4">
       <h1 className="text-2xl font-semibold mb-4">Users</h1>
       {isLoading ? (
-        "loading..."
+        <Loader />
       ) : error ? (
-        <Messege variant="danger">
+        <Message variant="danger">
           {error?.data?.message || error.error}
-        </Messege>
+        </Message>
       ) : (
         <div className="flex flex-col md:flex-row">
-          <AdminMenu />
+          {/* <AdminMenu /> */}
           <table className="w-full md:w-4/5 mx-auto">
             <thead>
               <tr>
@@ -83,7 +81,6 @@ console.log(users)
             </thead>
             <tbody>
               {users.map((user) => (
-                
                 <tr key={user._id}>
                   <td className="px-4 py-2">{user._id}</td>
                   <td className="px-4 py-2">
@@ -104,7 +101,7 @@ console.log(users)
                       </div>
                     ) : (
                       <div className="flex items-center">
-                        {user.userName}{" " }
+                        {user.username}{" "}
                         <button
                           onClick={() =>
                             toggleEdit(user._id, user.username, user.email)

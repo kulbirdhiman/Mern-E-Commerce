@@ -4,29 +4,27 @@ import { useAllProductsQuery } from "../../redux/api/productApiSlice";
 import AdminMenu from "./AdminMenu";
 
 const AllProducts = () => {
-  const { data 
+  const { data :products
 , isLoading, isError } = useAllProductsQuery();
 
   if (isLoading) {
     return <div>Loading...</div>;
   }
-console.log(data)
+console.log(products._id)
   if (isError) {
     return <div>Error loading products</div>;
   }
-console.log(data.products.map(p =>{
-  (p.brand)
-}))
+
   return (
     <>
       <div className="container mx-[9rem]">
         <div className="flex flex-col  md:flex-row">
           <div className="p-3">
             <div className="ml-[2rem] text-xl font-bold h-12">
-              All Products ({data.length})
+              All Products ({products.length})
             </div>
             <div className="flex flex-wrap justify-around items-center">
-              {Array.isArray(data) && data.length > 0 ?  data.products.map((product) => (
+              {Array.isArray(products) && products.length > 0 ?  products.map((product) => (
                 <Link
                   key={product._id}
                   to={`/admin/product/update/${product._id}`}
