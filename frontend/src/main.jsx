@@ -7,7 +7,7 @@ import { Route, RouterProvider, createRoutesFromElements } from "react-router";
 import { createBrowserRouter } from "react-router-dom";
 
 import PrivateRoute from "./components/PrivateRoute";
-
+import Cart from "./pages/cart/Cart.jsx";
 // Auth
 import Login from "./pages/Auth/Login";
 import Register from "./pages/Auth/Register";
@@ -25,6 +25,7 @@ import ProductUpdate from "./pages/Admin/ProductUpdate";
 import Home from "./pages/Home.jsx";
 import Favorites from "./pages/Products/Favorites.jsx";
 import ProductDetails from "./pages/Products/ProductDetails.jsx";
+import Shop from './pages/Shop.jsx'
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -34,6 +35,8 @@ const router = createBrowserRouter(
       <Route index={true} path="/" element={<Home />} />
       <Route path="/favorite" element={<Favorites />} />
       <Route path="/product/:id" element={<ProductDetails />} />
+      <Route path="/cart" element={<Cart />} />
+      <Route path="/shop" element={< Shop />} />
 
       {/* Registered users */}
       <Route path="" element={<PrivateRoute />}>
