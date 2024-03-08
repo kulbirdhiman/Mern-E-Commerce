@@ -1,16 +1,31 @@
 import express from "express";
 import { authenticate, authorizeAdmin } from '../middlewares/authMiddleware.js';
 import checkId from '../middlewares/checkId.js'
-import { createOder, getallOder, countTotal, totalSales, totalSalesByDay, oderFindById, payOrder, markOrderAsDiliverd } from '../controllers/oderControllers.js'
+import {
+    createOrder,
+    getAllOrders,
+    getUserOrders,
+    countTotalOrders,
+    calculateTotalSales,
+    calcualteTotalSalesByDate,
+    findOrderById,
+    markOrderAsPaid,
+    markOrderAsDelivered,
+} from '../controllers/oderControllers.js'
 const router = express.Router();
 
-router.route("/").post(authenticate, createOder).get(authenticate, authorizeAdmin, getallOder)
+router
+    .route("/")
+    .post(authenticate, createOrder)
+    .get(authenticate, authorizeAdmin, getAllOrders);
 
-router.route("/mine").get(authenticate, getUsersOder)
-router.route("/total-count").get(countTotal)
-router.route("/total-sales").get(authorizeAdmin, totalSales);
-router.route("/totaldaysales").get(totalSalesByDay)
-router.route("/:id").get(oderFindById);
-router.route("/:id/pay").put(authenticate, payOrder)
-router.route("/:id/deliver").put(authenticate, markOrderAsDiliverd)
+router.route("/mine").get(authenticate, getUserOrders);
+router.route("/total-orders").get(countTotalOrders);
+router.route("/total-sales").get(calculateTotalSales);
+router.route("/total-sales-by-date").get(calcualteTotalSalesByDate);
+router.route("/:id").get(authenticate, findOrderById);
+router.route("/:id/pay").put(authenticate, markOrderAsPaid);
+router
+    .route("/:id/deliver")
+    .put(authenticate, authorizeAdmin, markOrderAsDelivered);
 export default router;

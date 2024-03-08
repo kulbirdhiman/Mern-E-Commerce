@@ -21,11 +21,16 @@ import CategoryList from "./pages/Admin/CategoryList";
 import ProductList from "./pages/Admin/ProductList";
 import AllProducts from "./pages/Admin/AllProducts";
 import ProductUpdate from "./pages/Admin/ProductUpdate";
-
+import AdminDashbord from './pages/admin/AdminDashbord.jsx'
 import Home from "./pages/Home.jsx";
 import Favorites from "./pages/Products/Favorites.jsx";
 import ProductDetails from "./pages/Products/ProductDetails.jsx";
 import Shop from './pages/Shop.jsx'
+
+import Order from './pages/Orders/Order.jsx';
+import PlaceOrder from './pages/Orders/PlaceOrder.jsx';
+import Shipping from './pages/Orders/Shipping.jsx';
+import OrderList from './pages/admin/OrderList.jsx'
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -41,6 +46,9 @@ const router = createBrowserRouter(
       {/* Registered users */}
       <Route path="" element={<PrivateRoute />}>
         <Route path="/profile" element={<Profile />} />
+         <Route path="/shipping" element={<Shipping />} />
+        <Route path="/placeorder" element={<PlaceOrder />} />
+        <Route path="/order/:id" element={<Order />} />
       </Route>
 
       <Route path="/admin" element={<AdminRoute />}>
@@ -50,6 +58,8 @@ const router = createBrowserRouter(
         <Route path="allproductslist" element={<AllProducts />} />
         <Route path="productlist/:pageNumber" element={<ProductList />} />
         <Route path="product/update/:_id" element={<ProductUpdate />} />
+        <Route path="orderlist" element={<OrderList />} />
+        <Route path="dashboard" element={<AdminDashbord />} />
       </Route>
     </Route>
   )

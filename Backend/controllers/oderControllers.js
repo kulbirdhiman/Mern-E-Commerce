@@ -1,8 +1,7 @@
-import Order from '../models/oderModel.js'
-import Product from '../models/productModel.js'
-import expressAsyncHandler from 'express-async-handler'
+import Order from "../models/oderModel.js";
+import Product from "../models/productModel.js";
 
-
+// Utility Function
 function calcPrices(orderItems) {
     const itemsPrice = orderItems.reduce(
         (acc, item) => acc + item.price * item.qty,
@@ -27,7 +26,7 @@ function calcPrices(orderItems) {
     };
 }
 
-const createOder = expressAsyncHandler(async (req, res) => {
+const createOrder = async (req, res) => {
     try {
         const { orderItems, shippingAddress, paymentMethod } = req.body;
 
@@ -77,105 +76,139 @@ const createOder = expressAsyncHandler(async (req, res) => {
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
-});
+};
 
-const getallOder = expressAsyncHandler(async (req, res) => {
+const getAllOrders = async (req, res) => {
     try {
-        const alloders = await Oder.find().populate("user", "id username")
-        res.json(alloders)
+        const orders = await Order.find({}).populate("user", "id username");
+        res.json(orders);
     } catch (error) {
-        res.status(404)
-        throw new Error({ error: error.message })
+        res.status(500).json({ error: error.message });
     }
-})
-const getUsersOder = expressAsyncHandler(async (req, res) => {
+};
+
+const getUserOrders = async (req, res) => {
     try {
-        const oders = await Order.find({ user: req.user._id });
-        res.json(oders)
+        const orders = await Order.find({ user: req.user._id });
+        res.json(orders);
     } catch (error) {
-        res.status(500).json({ error: error.message })
+        res.status(500).json({ error: error.message });
     }
-});
-const countTotal = expressAsyncHandler(async (req, res) => {
+};
+
+const countTotalOrders = async (req, res) => {
     try {
         const totalOrders = await Order.countDocuments();
-        res.json({ totalOrders })
+        res.json({ totalOrders });
     } catch (error) {
-        res.status(409)
-        throw new Error('Error in counting')
+        res.status(500).json({ error: error.message });
     }
-});
-const totalSales = expressAsyncHandler(async (req, res) => {
+};
+
+const calculateTotalSales = async (req, res) => {
     try {
         const orders = await Order.find();
-        const totalsales = orders.reduce((sum, order) => {
-            sum + order.totalPrice, 0
-        });
-        res.json(totalSales)
+        const totalSales = orders.reduce((sum, order) => sum + order.totalPrice, 0);
+        res.json({ totalSales });
     } catch (error) {
-        res.status(404).json({ error: error.message })
+        res.status(500).json({ error: error.message });
     }
-});
-const totalSalesByDay = expressAsyncHandler(async (req, res) => {
+};
+
+const calcualteTotalSalesByDate = async (req, res) => {
     try {
-        const sales = await Order.aggregate([
+        const salesByDate = await Order.aggregate([
             {
                 $match: {
-                    paid: true
-                }
-            }
-        ])
+                    isPaid: true,
+                },
+            },
+            {
+                $group: {
+                    _id: {
+                        $dateToString: { format: "%Y-%m-%d", date: "$paidAt" },
+                    },
+                    totalSales: { $sum: "$totalPrice" },
+                },
+            },
+        ]);
+
+        res.json(salesByDate);
     } catch (error) {
-        res.status(404).json({ error: error.message })
+        res.status(500).json({ error: error.message });
     }
-});
-const oderFindById = expressAsyncHandler(async (req, res) => {
+};
+
+const findOrderById = async (req, res) => {
     try {
-        const order = Order.find(req.params._id).populate("user", "name email address");
+        const order = await Order.findById(req.params.id).populate(
+            "user",
+            "username email"
+        );
+
         if (order) {
-            res.json(order)
-        }
-        else {
-            res.status(500)
-            throw new Error("Oder not found")
+            res.json(order);
+        } else {
+            res.status(404);
+            throw new Error("Order not found");
         }
     } catch (error) {
-        res.status(404).json({ error: error.message })
+        res.status(500).json({ error: error.message });
     }
-})
-const payOrder = expressAsyncHandler(async (req, res) => {
-    const order = await Order.findById(req.params.id);
-    if (order) {
-        order.isPaid = true;
-        order.paidAt = Date.now();
-        order.paymentResult = {
-            id: req.body.id,
-            status: req.body.status,
-            updateTime: req.body.updateTime,
-            email_adress: req.body.email_adress
-        }
-        const updatedOrder = await order.save();
-        res.status(202).json(updatedOrder)
-    } else {
-        res.status(404)
-        throw new Error("Order not  Found")
-    }
-});
-const markOrderAsDiliverd = expressAsyncHandler(async (req, res) => {
+};
+
+const markOrderAsPaid = async (req, res) => {
     try {
         const order = await Order.findById(req.params.id);
+
+        if (order) {
+            order.isPaid = true;
+            order.paidAt = Date.now();
+            order.paymentResult = {
+                id: req.body.id,
+                status: req.body.status,
+                update_time: req.body.update_time,
+                email_address: req.body.payer.email_address,
+            };
+
+            const updateOrder = await order.save();
+            res.status(200).json(updateOrder);
+        } else {
+            res.status(404);
+            throw new Error("Order not found");
+        }
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
+const markOrderAsDelivered = async (req, res) => {
+    try {
+        const order = await Order.findById(req.params.id);
+
         if (order) {
             order.isDelivered = true;
             order.deliveredAt = Date.now();
+
             const updatedOrder = await order.save();
-            res.json(updatedOrder)
-        }
-        else {
-            res.status(404)
-            throw new Error('Order Not Found')
+            res.json(updatedOrder);
+        } else {
+            res.status(404);
+            throw new Error("Order not found");
         }
     } catch (error) {
-        res.status(404).json({ error: error.message })
+        res.status(500).json({ error: error.message });
     }
-})
-export { createOder, getallOder, getUsersOder, countTotal, totalSales, totalSalesByDay, oderFindById, payOrder, markOrderAsDiliverd }
+};
+
+export {
+    createOrder,
+    getAllOrders,
+    getUserOrders,
+    countTotalOrders,
+    calculateTotalSales,
+    calcualteTotalSalesByDate,
+    findOrderById,
+    markOrderAsPaid,
+    markOrderAsDelivered,
+};
