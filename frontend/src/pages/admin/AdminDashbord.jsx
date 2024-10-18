@@ -1,11 +1,11 @@
-import  Chart from 'react-apexcharts';
-import {useGetUsersQuery} from '../../redux/api/usersApiSlice';
-import {useGetTotalOrdersQuery ,useGetTotalSalesByDateQuery,useGetTotalSalesQuery} from '../../redux/api/orderApiSlice';
-import { useState,useEffect } from 'react';
+import Chart from 'react-apexcharts';
+import { useGetUsersQuery } from '../../redux/api/usersApiSlice';
+import { useGetTotalOrdersQuery, useGetTotalSalesByDateQuery, useGetTotalSalesQuery } from '../../redux/api/orderApiSlice';
+import { useState, useEffect, useMemo } from 'react';
 import AdminMenu from './AdminMenu';
 import OrderList from './OrderList';
-import Loader from '../../components/Loader'
-import { useStore } from 'react-redux';
+import Loader from '../../components/Loader';
+
 const AdminDashbord = () => {
   const { data: sales, isLoading } = useGetTotalSalesQuery();
   const { data: customers, isLoading: loading } = useGetUsersQuery();
@@ -15,24 +15,24 @@ const AdminDashbord = () => {
   const [state, setState] = useState({
     options: {
       chart: {
-        type: "line",
+        type: 'line',
       },
       tooltip: {
-        theme: "dark",
+        theme: 'dark',
       },
-      colors: ["#00E396"],
+      colors: ['#00E396'],
       dataLabels: {
         enabled: true,
       },
       stroke: {
-        curve: "smooth",
+        curve: 'smooth',
       },
       title: {
-        text: "Sales Trend",
-        align: "left",
+        text: 'Sales Trend',
+        align: 'left',
       },
       grid: {
-        borderColor: "#ccc",
+        borderColor: '#ccc',
       },
       markers: {
         size: 1,
@@ -40,48 +40,51 @@ const AdminDashbord = () => {
       xaxis: {
         categories: [],
         title: {
-          text: "Date",
+          text: 'Date',
         },
       },
       yaxis: {
         title: {
-          text: "Sales",
+          text: 'Sales',
         },
         min: 0,
       },
       legend: {
-        position: "top",
-        horizontalAlign: "right",
+        position: 'top',
+        horizontalAlign: 'right',
         floating: true,
         offsetY: -25,
         offsetX: -5,
       },
     },
-    series: [{ name: "Sales", data: [] }],
+    series: [{ name: 'Sales', data: [] }],
   });
 
-  useEffect(() => {
+  // Memoize formatted sales data to avoid recalculating on every render
+  const formattedSalesData = useMemo(() => {
     if (salesDetail) {
-      const formattedSalesDate = salesDetail.map((item) => ({
+      return salesDetail.map((item) => ({
         x: item._id,
         y: item.totalSales,
       }));
+    }
+    return [];
+  }, [salesDetail]);
 
+  useEffect(() => {
+    if (formattedSalesData.length > 0) {
       setState((prevState) => ({
         ...prevState,
         options: {
           ...prevState.options,
           xaxis: {
-            categories: formattedSalesDate.map((item) => item.x),
+            categories: formattedSalesData.map((item) => item.x),
           },
         },
-
-        series: [
-          { name: "Sales", data: formattedSalesDate.map((item) => item.y) },
-        ],
+        series: [{ name: 'Sales', data: formattedSalesData.map((item) => item.y) }],
       }));
     }
-  }, [salesDetail]);
+  }, [formattedSalesData]);
 
   return (
     <>
@@ -96,7 +99,7 @@ const AdminDashbord = () => {
 
             <p className="mt-5">Sales</p>
             <h1 className="text-xl font-bold">
-              $ {isLoading ? <Loader /> : sales.totalSales.toFixed(2)}
+              $ {isLoading ? <Loader /> : sales?.totalSales?.toFixed(2)}
             </h1>
           </div>
           <div className="rounded-lg bg-black p-5 w-[20rem] mt-5">
@@ -106,7 +109,7 @@ const AdminDashbord = () => {
 
             <p className="mt-5">Customers</p>
             <h1 className="text-xl font-bold">
-              $ {isLoading ? <Loader /> : customers?.length}
+              {loading ? <Loader /> : customers?.length}
             </h1>
           </div>
           <div className="rounded-lg bg-black p-5 w-[20rem] mt-5">
@@ -116,7 +119,7 @@ const AdminDashbord = () => {
 
             <p className="mt-5">All Orders</p>
             <h1 className="text-xl font-bold">
-              $ {isLoading ? <Loader /> : orders?.totalOrders}
+              {loadingTwo ? <Loader /> : orders?.totalOrders}
             </h1>
           </div>
         </div>
@@ -136,6 +139,6 @@ const AdminDashbord = () => {
       </section>
     </>
   );
-}
+};
 
-export default AdminDashbord
+export default AdminDashbord;

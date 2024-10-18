@@ -1,21 +1,20 @@
-import { useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import {
   useCreateCategoryMutation,
   useUpdateCategoryMutation,
   useDeleteCategoryMutation,
   useFetchCategoriesQuery,
 } from "../../redux/api/categoryApiSlice";
-
 import { toast } from "react-toastify";
 import CategoryForm from "../../components/CategoryForm";
 import Modal from "../../components/Modal";
 import AdminMenu from "./AdminMenu";
 
 const CategoryList = () => {
-  const { data: categories } = useFetchCategoriesQuery();
-  const [name, setName] = useState("");
+  const { data: categories, refetch } = useFetchCategoriesQuery();
+  
+  const [formState, setFormState] = useState({ name: "", updatingName: "" });
   const [selectedCategory, setSelectedCategory] = useState(null);
-  const [updatingName, setUpdatingName] = useState("");
   const [modalVisible, setModalVisible] = useState(false);
 
   const [createCategory] = useCreateCategoryMutation();
@@ -24,30 +23,24 @@ const CategoryList = () => {
 
   const handleCreateCategory = async (e) => {
     e.preventDefault();
-
-    if (!name) {
+    if (!formState.name) {
       toast.error("Category name is required");
       return;
     }
 
     try {
-      const result = await createCategory({ name }).unwrap();
-      if (result.error) {
-        toast.error(result.error);
-      } else {
-        setName("");
-        toast.success(`${result.name} is created.`);
-      }
+      const result = await createCategory({ name: formState.name }).unwrap();
+      setFormState({ ...formState, name: "" });
+      refetch(); // Only refetch after success
+      toast.success(`${result.name} is created.`);
     } catch (error) {
-      console.error(error);
       toast.error("Creating category failed, try again.");
     }
   };
 
   const handleUpdateCategory = async (e) => {
     e.preventDefault();
-
-    if (!updatingName) {
+    if (!formState.updatingName) {
       toast.error("Category name is required");
       return;
     }
@@ -55,40 +48,48 @@ const CategoryList = () => {
     try {
       const result = await updateCategory({
         categoryId: selectedCategory._id,
-        updatedCategory: {
-          name: updatingName,
-        },
+        updatedCategory: { name: formState.updatingName },
       }).unwrap();
-
-      if (result.error) {
-        toast.error(result.error);
-      } else {
-        toast.success(`${result.name} is updated`);
-        setSelectedCategory(null);
-        setUpdatingName("");
-        setModalVisible(false);
-      }
+      setModalVisible(false);
+      setFormState({ ...formState, updatingName: "" });
+      setSelectedCategory(null);
+      refetch();
+      toast.success(`${result.name} is updated`);
     } catch (error) {
-      console.error(error);
+      toast.error("Updating category failed.");
     }
   };
 
   const handleDeleteCategory = async () => {
     try {
       const result = await deleteCategory(selectedCategory._id).unwrap();
-
-      if (result.error) {
-        toast.error(result.error);
-      } else {
-        toast.success(`${result.name} is deleted.`);
-        setSelectedCategory(null);
-        setModalVisible(false);
-      }
+      setModalVisible(false);
+      setSelectedCategory(null);
+      refetch();
+      toast.success(`${result.name} is deleted.`);
     } catch (error) {
-      console.error(error);
-      toast.error("Category delection failed. Tray again.");
+      toast.error("Category deletion failed. Try again.");
     }
   };
+
+  // Memoize categories to avoid unnecessary re-renders
+  const categoryButtons = useMemo(() => {
+    console.log("hello")
+    return categories?.map((category) => (
+      <div key={category._id}>
+        <button
+          className="bg-white border border-pink-500 text-pink-500 py-2 px-4 rounded-lg m-3 hover:bg-pink-500 hover:text-white focus:outline-none focus:ring-2 focus:ring-pink-500 focus:ring-opacity-50"
+          onClick={() => {
+            setModalVisible(true);
+            setSelectedCategory(category);
+            setFormState({ ...formState, updatingName: category.name });
+          }}
+        >
+          {category.name}
+        </button>
+      </div>
+    ));
+  }, [categories, formState]);
 
   return (
     <div className="ml-[10rem] flex flex-col md:flex-row">
@@ -96,41 +97,28 @@ const CategoryList = () => {
       <div className="md:w-3/4 p-3">
         <div className="h-12">Manage Categories</div>
         <CategoryForm
-          value={name}
-          setValue={setName}
+          value={formState.name}
+          setValue={(value) => setFormState({ ...formState, name: value })}
           handleSubmit={handleCreateCategory}
         />
         <br />
         <hr />
 
-        <div className="flex flex-wrap">
-          {categories?.map((category) => (
-            <div key={category._id}>
-              <button
-                className="bg-white border border-pink-500 text-pink-500 py-2 px-4 rounded-lg m-3 hover:bg-pink-500 hover:text-white focus:outline-none foucs:ring-2 focus:ring-pink-500 focus:ring-opacity-50"
-                onClick={() => {
-                  {
-                    setModalVisible(true);
-                    setSelectedCategory(category);
-                    setUpdatingName(category.name);
-                  }
-                }}
-              >
-                {category.name}
-              </button>
-            </div>
-          ))}
-        </div>
+        <div className="flex flex-wrap">{categoryButtons}</div>
 
-        <Modal isOpen={modalVisible} onClose={() => setModalVisible(false)}>
-          <CategoryForm
-            value={updatingName}
-            setValue={(value) => setUpdatingName(value)}
-            handleSubmit={handleUpdateCategory}
-            buttonText="Update"
-            handleDelete={handleDeleteCategory}
-          />
-        </Modal>
+        {modalVisible && (
+          <Modal isOpen={modalVisible} onClose={() => setModalVisible(false)}>
+            <CategoryForm
+              value={formState.updatingName}
+              setValue={(value) =>
+                setFormState({ ...formState, updatingName: value })
+              }
+              handleSubmit={handleUpdateCategory}
+              buttonText="Update"
+              handleDelete={handleDeleteCategory}
+            />
+          </Modal>
+        )}
       </div>
     </div>
   );

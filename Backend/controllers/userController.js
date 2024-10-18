@@ -2,6 +2,10 @@ import User from "../models/userModel.js";
 import asyncHandler from "../middlewares/asyncHandler.js";
 import bcrypt from "bcryptjs";
 import createToken from "../utils/createToken.js";
+import NodeCache from "node-cache";
+
+// Initialize cache with a 1-hour expiration time
+const cache = new NodeCache({ stdTTL: 3600 });
 
 const createUser = asyncHandler(async (req, res) => {
   const { username, email, password } = req.body;
@@ -11,7 +15,7 @@ const createUser = asyncHandler(async (req, res) => {
   }
 
   const userExists = await User.findOne({ email });
-  if (userExists) res.status(400).send("User already exists");
+  if (userExists) return res.status(400).send("User already exists");
 
   const salt = await bcrypt.genSalt(10);
   const hashedPassword = await bcrypt.hash(password, salt);
@@ -20,6 +24,8 @@ const createUser = asyncHandler(async (req, res) => {
   try {
     await newUser.save();
     createToken(res, newUser._id);
+
+    cache.del("users");
 
     res.status(201).json({
       _id: newUser._id,
@@ -35,17 +41,10 @@ const createUser = asyncHandler(async (req, res) => {
 
 const loginUser = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
-
-  console.log(email);
-  console.log(password);
-
   const existingUser = await User.findOne({ email });
 
   if (existingUser) {
-    const isPasswordValid = await bcrypt.compare(
-      password,
-      existingUser.password
-    );
+    const isPasswordValid = await bcrypt.compare(password, existingUser.password);
 
     if (isPasswordValid) {
       createToken(res, existingUser._id);
@@ -59,11 +58,13 @@ const loginUser = asyncHandler(async (req, res) => {
       return;
     }
   }
+
+  res.status(400).send("Invalid email or password");
 });
 
 const logoutCurrentUser = asyncHandler(async (req, res) => {
   res.cookie("jwt", "", {
-    httyOnly: true,
+    httpOnly: true,
     expires: new Date(0),
   });
 
@@ -71,14 +72,32 @@ const logoutCurrentUser = asyncHandler(async (req, res) => {
 });
 
 const getAllUsers = asyncHandler(async (req, res) => {
-  const users = await User.find({});
+  let users = cache.get("users");
+
+  if (!users) {
+    users = await User.find({});
+    cache.set("users", users); // Cache users for future requests
+  }
+
   res.json(users);
 });
 
 const getCurrentUserProfile = asyncHandler(async (req, res) => {
+  const cachedUser = cache.get(`user_${req.user._id}`);
+
+  if (cachedUser) {
+    return res.json(cachedUser);
+  }
+
   const user = await User.findById(req.user._id);
 
   if (user) {
+    cache.set(`user_${req.user._id}`, {
+      _id: user._id,
+      username: user.username,
+      email: user.email,
+    });
+
     res.json({
       _id: user._id,
       username: user.username,
@@ -105,6 +124,8 @@ const updateCurrentUserProfile = asyncHandler(async (req, res) => {
 
     const updatedUser = await user.save();
 
+    cache.del(`user_${req.user._id}`);
+
     res.json({
       _id: updatedUser._id,
       username: updatedUser.username,
@@ -127,6 +148,7 @@ const deleteUserById = asyncHandler(async (req, res) => {
     }
 
     await User.deleteOne({ _id: user._id });
+    cache.del("users");
     res.json({ message: "User removed" });
   } else {
     res.status(404);
@@ -135,9 +157,16 @@ const deleteUserById = asyncHandler(async (req, res) => {
 });
 
 const getUserById = asyncHandler(async (req, res) => {
+  const cachedUser = cache.get(`user_${req.params.id}`);
+
+  if (cachedUser) {
+    return res.json(cachedUser);
+  }
+
   const user = await User.findById(req.params.id).select("-password");
 
   if (user) {
+    cache.set(`user_${req.params.id}`, user);
     res.json(user);
   } else {
     res.status(404);
@@ -154,6 +183,9 @@ const updateUserById = asyncHandler(async (req, res) => {
     user.isAdmin = Boolean(req.body.isAdmin);
 
     const updatedUser = await user.save();
+
+    cache.del(`user_${req.params.id}`);
+    cache.del("users");
 
     res.json({
       _id: updatedUser._id,
